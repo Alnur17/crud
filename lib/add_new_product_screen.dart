@@ -21,42 +21,51 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
   final TextEditingController _imageTEController = TextEditingController();
 
   final GlobalKey<FormState> _formState = GlobalKey<FormState>();
-
+  bool inProgress = false;
 
   void addProduct() async {
-    Response response = await post(Uri.parse(
-        'https://crud.teamrabbil.com/api/v1/CreateProduct'),
+    inProgress = true;
+    if (mounted) {
+      setState(() {});
+    }
+    Response response = await post(
+      Uri.parse('https://crud.teamrabbil.com/api/v1/CreateProduct'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(
         {
           "Img": _imageTEController.text.trim(),
-          "ProductCode":
-          _productCodeTEController.text.trim(),
-          "ProductName":
-          _productNameTEController.text.trim(),
+          "ProductCode": _productCodeTEController.text.trim(),
+          "ProductName": _productNameTEController.text.trim(),
           "Qty": _quantityTEController.text.trim(),
           "TotalPrice": _totalPriceTEController.text.trim(),
           "UnitPrice": _unitPriceTEController.text.trim(),
         },
       ),
     );
-    if(response.statusCode == 200){
+
+    inProgress = false;
+    if (mounted) {
+      setState(() {});
+    }
+
+    if (response.statusCode == 200) {
       final decodeBody = jsonDecode(response.body);
-      if(decodeBody['status'] == 'success'){
-        if(mounted){
+      if (decodeBody['status'] == 'success') {
+        if (mounted) {
           _productNameTEController.clear();
           _productCodeTEController.clear();
           _quantityTEController.clear();
           _totalPriceTEController.clear();
           _unitPriceTEController.clear();
           _imageTEController.clear();
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product added successfully')));
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Product added successfully')));
         }
-      }else{
-        if(mounted){
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fail to add product. Try again!')));
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Fail to add product. Try again!')));
         }
-
       }
     }
   }
@@ -155,8 +164,8 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
                 SizedBox(
                   height: 50,
                   width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () async {
+                  child: inProgress ? const Center(child: CircularProgressIndicator()) : ElevatedButton(
+                    onPressed: () {
                       if (_formState.currentState!.validate()) {
                         addProduct();
                       }
@@ -175,6 +184,4 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
       ),
     );
   }
-
-
 }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:crud/product.dart';
+import 'package:crud/update_product_screen.dart';
 import 'package:flutter/material.dart';
 
 import 'add_new_product_screen.dart';
@@ -28,8 +29,6 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {});
     Response response =
         await get(Uri.parse('https://crud.teamrabbil.com/api/v1/ReadProduct'));
-    //print(response.statusCode);
-    //print(response.body);
     final Map<String, dynamic> decodedResponse = jsonDecode(response.body);
     if (response.statusCode == 200 && decodedResponse['status'] == 'success') {
       products.clear();
@@ -39,6 +38,20 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     inProgress = false;
     setState(() {});
+  }
+
+  void deleteProduct(String id) async {
+    inProgress = true;
+    setState(() {});
+    Response response = await get(
+        Uri.parse('https://crud.teamrabbil.com/api/v1/DeleteProduct/$id'));
+    final Map<String, dynamic> decodedResponse = jsonDecode(response.body);
+    if (response.statusCode == 200 && decodedResponse['status'] == 'success') {
+      getProduct();
+    } else {
+      inProgress = false;
+      setState(() {});
+    }
   }
 
   @override
@@ -88,7 +101,17 @@ class _HomeScreenState extends State<HomeScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               ListTile(
-                                onTap: () {},
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => UpdateProductScreen(
+                                        product: products[index],
+                                      ),
+                                    ),
+                                  );
+                                },
                                 leading: const Icon(Icons.edit),
                                 title: const Text('Edit'),
                               ),
@@ -96,7 +119,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 height: 0,
                               ),
                               ListTile(
-                                onTap: () {},
+                                onTap: () {
+                                  deleteProduct(products[index].id);
+                                  Navigator.pop(context);
+                                },
                                 leading: const Icon(Icons.delete),
                                 title: const Text('Delete'),
                               ),
